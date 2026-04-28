@@ -60,15 +60,24 @@ def get_cors_origins() -> list[str]:
     return list(dict.fromkeys(origins))
 
 
+def get_required_env(name: str) -> str:
+    value = os.getenv(name)
+
+    if value is None or not value.strip():
+        raise RuntimeError(f"{name} is not configured.")
+
+    return value.strip()
+
+
 class Settings:
     database_url: str | None = normalize_database_url(
         os.getenv("SUPABASE_DATABASE_URL") or os.getenv("DATABASE_URL")
     )
-    jwt_secret_key: str = os.getenv("JWT_SECRET_KEY")
+    jwt_secret_key: str = get_required_env("JWT_SECRET_KEY")
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
-    admin_email: str = os.getenv("ADMIN_EMAIL").strip().lower()
-    admin_password: str = os.getenv("ADMIN_PASSWORD")
+    admin_email: str = get_required_env("ADMIN_EMAIL").lower()
+    admin_password: str = get_required_env("ADMIN_PASSWORD")
     admin_display_name: str = os.getenv("ADMIN_DISPLAY_NAME", "Администратор")
     admin_emails: list[str] = [
         admin_email,
